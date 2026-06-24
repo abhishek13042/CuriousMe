@@ -29,11 +29,12 @@ export default function MyBatch() {
 
   // S4: each topic covers 4 problems = 2 study days
   const handleS4TopicToggle = (topicStart) => {
-    const dayNum1 = Math.ceil(topicStart / 2);
-    const dayNum2 = dayNum1 + 1;
-    const allDone = completedBySubject.S4.has(dayNum1) && completedBySubject.S4.has(dayNum2);
-    for (const dayNum of [dayNum1, dayNum2]) {
+    const d1 = Math.ceil(topicStart / 2);
+    const d2 = d1 + 1;
+    const allDone = completedBySubject.S4.has(d1) && completedBySubject.S4.has(d2);
+    for (const dayNum of [d1, d2]) {
       const isDone = completedBySubject.S4.has(dayNum);
+      // mark undone ones when ticking; unmark done ones when unticking
       if (allDone ? isDone : !isDone) {
         const date = studyDayToDate(dayNum);
         if (!date) continue;
@@ -392,9 +393,15 @@ export default function MyBatch() {
 
               <div className="divide-y divide-[#F5F4F0]">
                 {stepsWithBounds.map((step, si) => {
-                  const stepDone   = problemsSolved >= step.endProblem;
-                  const stepActive = !stepDone && problemsSolved >= step.startProblem;
-                  const reached    = stepActive ? problemsSolved - step.startProblem + 1 : 0;
+                  // Count topics done by checking the two specific day numbers each topic maps to
+                  const topicsDoneInStep = step.topics.filter((_, ti) => {
+                    const ts = step.startProblem + ti * 4;
+                    const d1 = Math.ceil(ts / 2);
+                    return completedBySubject.S4.has(d1) && completedBySubject.S4.has(d1 + 1);
+                  }).length;
+                  const stepDone   = topicsDoneInStep === step.topics.length;
+                  const stepActive = !stepDone && topicsDoneInStep > 0;
+                  const reached    = topicsDoneInStep;
                   const expanded   = !!expandedModules[`S4-${si}`];
 
                   return (
@@ -425,7 +432,7 @@ export default function MyBatch() {
                           </p>
                           <p className="text-[10px] text-[#9A9590] font-['Space_Mono'] mt-0.5">
                             Problems #{step.startProblem}–{step.endProblem}
-                            {stepActive && ` · ${reached} reached`}
+                            {stepActive && ` · ${reached}/${step.topics.length} topics done`}
                           </p>
                         </div>
 
@@ -446,8 +453,10 @@ export default function MyBatch() {
                             <div className="px-4 pb-4 pl-16 space-y-0.5">
                               {step.topics.map((topic, ti) => {
                                 const topicStart = step.startProblem + ti * 4;
-                                const topicDone  = problemsSolved >= topicStart + 4;
-                                const topicActive = !topicDone && problemsSolved >= topicStart;
+                                const d1 = Math.ceil(topicStart / 2);
+                                const d2 = d1 + 1;
+                                const topicDone   = completedBySubject.S4.has(d1) && completedBySubject.S4.has(d2);
+                                const topicActive = !topicDone && (completedBySubject.S4.has(d1) || completedBySubject.S4.has(d2));
                                 return (
                                   <div
                                     key={ti}
