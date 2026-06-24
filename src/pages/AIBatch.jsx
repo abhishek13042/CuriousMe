@@ -1143,7 +1143,7 @@ const AIBatch = () => {
   @media print{body{padding:20px}}
 </style></head><body>
 <h1>Daily Practice Problems — Study Day #${dayNum}</h1>
-<p class="sub">${format(selectedDate, 'EEEE, d MMMM yyyy')} · 20 problems · 5 per subject · AI Engineer Batch</p>
+<p class="sub">${format(selectedDate, 'EEEE, d MMMM yyyy')} · 10 problems · AI Engineer Batch</p>
 ${SUBJECT_KEYS.map(sk => {
   const probs = grouped[sk] || [];
   if (!probs.length) return '';
@@ -1185,7 +1185,7 @@ ${SUBJECT_KEYS.map(sk => {
                   Daily Practice Problems
                 </h2>
                 <p className="text-xs text-[#9A9590] font-['Inter'] mt-0.5">
-                  20 problems · 5 per subject · concept → build → feynman → connect → apply
+                  10 problems · concept → feynman → apply
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
@@ -1250,8 +1250,8 @@ ${SUBJECT_KEYS.map(sk => {
                 className="flex items-center gap-2 px-5 py-3 bg-[#1A1A2E] text-white rounded-xl text-xs font-bold font-['Space_Mono'] uppercase tracking-wider mx-auto"
               >
                 {isGeneratingDpp
-                  ? <><RefreshCw size={12} className="animate-spin" /> Generating 20 problems...</>
-                  : <><Zap size={12} /> Generate DPP (20 questions)</>
+                  ? <><RefreshCw size={12} className="animate-spin" /> Generating 10 problems...</>
+                  : <><Zap size={12} /> Generate DPP (10 questions)</>
                 }
               </button>
             )}

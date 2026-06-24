@@ -259,15 +259,19 @@ TODAY — Study Day ${dayNum}:
 - S3 (Software Engineering, 1.5 hrs): "${schedule.S3.title}" [Module: ${schedule.S3.module}]
 - S4 (DSA, 1 hr): "${schedule.S4.title}" [${schedule.S4.problemRange}]
 
-Generate EXACTLY 5 problems per subject = 20 problems total (5 for S1, 5 for S2, 5 for S3, 5 for S4).
+Generate EXACTLY 10 problems total — 3 for S1, 3 for S2, 2 for S3, 2 for S4.
 These are NOT textbook problems. The goal is to develop how Abhishek THINKS.
 
-For each subject's 5 problems, follow this exact pattern:
-  Q1 — CONCEPT CHECK: A short "why does this work?" question. No more than 3 sentences. Requires a precise explanation, not just a definition.
+For S1 and S2 (3 problems each), use these types:
+  Q1 — CONCEPT CHECK: A short "why does this work?" question. Requires a precise explanation, not just a definition.
+  Q2 — FEYNMAN TRAP: Start from a common misconception. The student must identify the flaw and explain the correct behaviour.
+  Q3 — APPLY: A realistic scenario from a startup, research lab, or engineering team. Open-ended, 15–20 min.
+
+For S3 and S4 (2 problems each), use these types:
+  Q1 — CONCEPT CHECK: Same as above.
   Q2 — BUILD IT: Requires writing/sketching something concrete (code stub, diagram, data flow). 10–15 min.
-  Q3 — FEYNMAN TRAP: Start from a common misconception about today's topic. The student must identify the flaw and explain the correct behaviour.
-  Q4 — CONNECT: Bridge today's topic with something from the last 7 days or another subject in the batch.
-  Q5 — APPLY: A realistic scenario from a startup, research lab, or engineering team. Open-ended, 20–25 min.
+
+At least one problem across all 10 must bridge two subjects — set "bridge" for that problem only.
 
 TONE: Brilliant professor who genuinely wants the student to have an "aha!" moment.
 
@@ -279,7 +283,7 @@ Return ONLY valid JSON (no markdown fences, no text outside the JSON):
       "subjectName": "Generative AI",
       "qType": "CONCEPT CHECK",
       "title": "Short title (max 8 words)",
-      "scenario": "1-2 sentences of context (can be null for Q1/Q3).",
+      "scenario": "1-2 sentences of context (can be null for Q1).",
       "problem": "The actual question or challenge. 2-4 sentences.",
       "deliverable": "Exactly what to produce — one concrete sentence.",
       "bridge": null,
@@ -288,8 +292,8 @@ Return ONLY valid JSON (no markdown fences, no text outside the JSON):
   ]
 }
 
-For Q4 CONNECT problems, set "bridge" to one sentence naming the second subject/concept being bridged. For all others set "bridge" to null.
-Output all 20 problems in order: S1-Q1, S1-Q2, S1-Q3, S1-Q4, S1-Q5, then S2-Q1 … S4-Q5.`;
+For cross-domain problems set "bridge" to one sentence naming the second subject/concept. For all others set "bridge" to null.
+Output all 10 problems in order: S1-Q1, S1-Q2, S1-Q3, S2-Q1, S2-Q2, S2-Q3, S3-Q1, S3-Q2, S4-Q1, S4-Q2.`;
 
           const raw = await callGroq([{ role: 'user', content: prompt }]);
 
