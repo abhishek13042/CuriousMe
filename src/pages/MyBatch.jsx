@@ -27,6 +27,23 @@ export default function MyBatch() {
     toggleCompletion(dateStr, sk, lecDayNum, schedule);
   };
 
+  // S4: each topic covers 4 problems = 2 study days
+  const handleS4TopicToggle = (topicStart) => {
+    const dayNum1 = Math.ceil(topicStart / 2);
+    const dayNum2 = dayNum1 + 1;
+    const allDone = completedBySubject.S4.has(dayNum1) && completedBySubject.S4.has(dayNum2);
+    for (const dayNum of [dayNum1, dayNum2]) {
+      const isDone = completedBySubject.S4.has(dayNum);
+      if (allDone ? isDone : !isDone) {
+        const date = studyDayToDate(dayNum);
+        if (!date) continue;
+        const dateStr = date.toISOString().split('T')[0];
+        const schedule = getScheduleForDay(dayNum);
+        toggleCompletion(dateStr, 'S4', dayNum, schedule);
+      }
+    }
+  };
+
   // completions = { 'YYYY-MM-DD': { S1: bool, ... } }
   // Map each date → study day number, collect which dayNums are done per subject
   const completedBySubject = useMemo(() => {
@@ -434,7 +451,8 @@ export default function MyBatch() {
                                 return (
                                   <div
                                     key={ti}
-                                    className="flex items-start gap-2.5 py-1.5 px-2 rounded-lg transition-all"
+                                    onClick={() => handleS4TopicToggle(topicStart)}
+                                    className="flex items-start gap-2.5 py-1.5 px-2 rounded-lg transition-all cursor-pointer hover:bg-black/5"
                                     style={topicDone ? { backgroundColor: sub.color + '0C' } : {}}
                                   >
                                     <div
