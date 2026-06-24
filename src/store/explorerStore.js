@@ -1,0 +1,914 @@
+import { create } from 'zustand';
+import { supabase } from '../lib/supabase';
+
+import { callGroq } from '../lib/groq';
+import { saveExplorerMemory, loadMemories, MEMORY_TYPES } from '../lib/globalMemory'
+
+export const EXPLORER_DOMAINS = {
+  Psychology: {
+    beginner: [
+      'How Memory Works — Encoding, Storage, Retrieval',
+      'Cognitive Biases — Why Your Brain Lies to You',
+      'Motivation Science — Intrinsic vs Extrinsic Drivers',
+      'Habit Formation — The Loop and How to Break It',
+      'Decision Fatigue — Why Willpower Depletes'
+    ],
+    intermediate: [
+      'Neuroplasticity — How the Brain Physically Changes',
+      'Flow State — The Science of Peak Performance',
+      'Emotional Regulation — The Prefrontal-Amygdala Dance',
+      'Social Psychology — Conformity, Authority, and Groupthink',
+      'Personality Science — Beyond MBTI'
+    ],
+    advanced: [
+      'Psychotherapy Models — CBT, DBT, ACT Compared',
+      'Attachment Theory — Childhood Patterns in Adult Behavior',
+      'Consciousness — What Science Actually Knows',
+      'The Self — Is There a Fixed Identity?'
+    ]
+  },
+  Neuroscience: {
+    beginner: [
+      'How Neurons Work — Action Potentials Explained Simply',
+      'The Brain Atlas — What Each Region Actually Does',
+      'Sleep Science — What Happens While You Sleep',
+      'Dopamine — Beyond the Pleasure Myth',
+      'Stress Response — Cortisol, HPA Axis, Fight-or-Flight'
+    ],
+    intermediate: [
+      'Learning and LTP — How Memories Form at the Synapse',
+      'Default Mode Network — When the Brain Does Nothing',
+      'Neurochemistry of Depression — Beyond Serotonin',
+      'Mirror Neurons — Empathy and Social Cognition',
+      'The Gut-Brain Axis — Your Second Brain'
+    ],
+    advanced: [
+      'Connectomics — Mapping Every Neural Connection',
+      'Brain Stimulation — TMS, tDCS, Deep Brain Stimulation',
+      'Neural Decoding — Reading Thoughts from Brain Activity',
+      'Consciousness and the Hard Problem'
+    ]
+  },
+  'Cognitive Science': {
+    beginner: [
+      'What is Cognition — Thinking About Thinking',
+      'Attention — Limited Resource or Dynamic Filter',
+      'Working Memory — Your Mental Scratchpad',
+      'Language and Thought — Does Vocabulary Limit Ideas',
+      'Mental Models — How Experts Think Differently'
+    ],
+    intermediate: [
+      'Dual Process Theory — System 1 and System 2',
+      'Embodied Cognition — How Your Body Shapes Your Thoughts',
+      'Expertise Science — 10,000 Hours and Its Nuances',
+      'Analogical Reasoning — The Engine of Creativity',
+      'Metacognition — Thinking About Your Own Thinking'
+    ],
+    advanced: [
+      'Predictive Processing — The Brain as Prediction Machine',
+      'Extended Mind Theory — Are Your Tools Part of Your Mind',
+      'Cognitive Load Theory — Implications for Learning Design'
+    ]
+  },
+  Geopolitics: {
+    beginner: [
+      'Power Transition Theory — Why Rising Powers Create Conflict',
+      'Geopolitics of Oil — Why Energy Shapes Foreign Policy',
+      'The Nation-State System — Westphalia to Today',
+      'India-China — The Great Game in Asia',
+      'US Dollar Hegemony — Why It Matters to Everyone'
+    ],
+    intermediate: [
+      'Belt and Road Initiative — China\'s Grand Strategy Decoded',
+      'Russia-NATO — The Architecture of European Security',
+      'Middle East — Oil, Religion, and the Post-Cold War Order',
+      'Africa in the 21st Century — The New Scramble',
+      'Technology and Power — Semiconductors as Geopolitical Weapons'
+    ],
+    advanced: [
+      'Multipolar World — What Happens After US Hegemony',
+      'Economic Warfare — Sanctions, Tariffs, and Currency Wars',
+      'Climate Geopolitics — How Warming Reshapes Power'
+    ]
+  },
+  AI: {
+    beginner: [
+      'Transformers Revisited — Attention Is Still All You Need',
+      'LSTMs vs Transformers — When Recurrence Still Wins',
+      'Diffusion Models — How Images Are Generated Mathematically',
+      'Reinforcement Learning From Human Feedback — How ChatGPT Was Trained',
+      'Embeddings — Why Meaning Lives in Geometry'
+    ],
+    intermediate: [
+      'Mixture of Experts — How GPT-4 Actually Scales',
+      'State Space Models — Mamba and the Attention Alternative',
+      'AI in Drug Discovery — AlphaFold and Beyond',
+      'Multimodal Grounding — How Vision-Language Models Really Work',
+      'AI Safety Evals — How Frontier Labs Test for Catastrophic Risk',
+      'Neural Architecture Search — Teaching AI to Design AI',
+      'Mechanistic Interpretability — Reading Circuits Inside GPT'
+    ],
+    advanced: [
+      'Quantum Machine Learning — Where Quantum Tunneling Meets Inference',
+      'AI in Defense — Autonomous Targeting, Pilot Biometrics, Lethal Autonomy',
+      'Neuromorphic Computing — Intel Loihi and Brain-Inspired Chips',
+      'Test-Time Compute — Why Thinking Longer Changes Everything',
+      'Post-Training Methods — RLHF, DPO, GRPO Compared',
+      'Frontier Model Capabilities — Latest Benchmarks and Emergent Behaviors'
+    ]
+  },
+  'AI × Fields': {
+    beginner: [
+      'AI in Neuroscience — Brain Decoding and Neural Prosthetics',
+      'AI in Psychology — Therapy Bots, Diagnostic Models, Mental Health Tech',
+      'AI in Geopolitics — Surveillance States, Drone Wars, Information Ops',
+      'AI in Medicine — From Radiology to Pandemic Prediction',
+      'AI in Education — Personalized Learning and the Tutoring Revolution'
+    ],
+    intermediate: [
+      'BCI + AI — Neuralink, BrainGate, and Thought-to-Text',
+      'AI-Detected Heartbeat Anomalies — The US Pilot Study and Implications',
+      'Computational Psychiatry — Modeling Mental Illness with AI',
+      'AI and Nuclear Security — Verification, Early Warning, Escalation Risk',
+      'AI in Climate Science — Weather Forecasting to Geoengineering Models'
+    ],
+    advanced: [
+      'AI Forecasting in Intelligence — CIA, DARPA, and Prediction Markets',
+      'Cognitive Modeling — AI as Theory of Mind',
+      'AI and Consciousness — Can a Model Be Sentient',
+      'Whole Brain Emulation — The Convergence of Neuroscience and AI'
+    ]
+  }
+};
+
+export function getNextTopicSuggestion(currentDomain, topicArchive, knowledgeDepth) {
+  if (!currentDomain || !EXPLORER_DOMAINS[currentDomain]) return null;
+  
+  const allStudied = (topicArchive || [])
+    .map(t => t.topic_data?.title?.toLowerCase() || '');
+  
+  const domainTopics = Object.entries(
+    EXPLORER_DOMAINS[currentDomain]
+  ).flatMap(([level, topics]) => 
+    topics.map(t => ({ title: t, level }))
+  );
+  
+  const unstudied = domainTopics.filter(t => 
+    !allStudied.some(s => s.includes(t.title.toLowerCase().slice(0, 20)))
+  );
+  
+  const beginner = unstudied.filter(t => t.level === 'beginner');
+  const intermediate = unstudied.filter(t => t.level === 'intermediate');
+  const advanced = unstudied.filter(t => t.level === 'advanced');
+  
+  return beginner[0] || intermediate[0] || advanced[0] || null;
+}
+
+const groqFetch = async (prompt) => {
+  const result = await callGroq({
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 2500,
+    temperature: 0.9
+  });
+  if (result.error) {
+    console.error('Groq fetch error:', result.error)
+    return null
+  }
+  return result.text;
+};
+
+export const useExplorerStore = create((set, get) => ({
+  // Current topic state
+  weeklyTopic: null,
+  dailyConcepts: [],
+  books: [],
+  papers: [],
+  currentTopicId: null,
+  currentNotes: '',
+
+  // Archive
+  topicArchive: [],
+
+  // Brain drops
+  brainDrops: [],
+
+  // Knowledge depth per domain
+  knowledgeDepth: [],
+
+  // Read tracking (persisted per topic)
+  readItems: new Set(),
+
+  // UI state
+  isSavingNotes: false,
+  lastGenerated: null,
+
+  // Retention Quiz
+  activeQuiz: null,
+  quizHistory: {},
+
+  // Connections
+  topicConnections: null,
+  isGeneratingConnections: false,
+
+  // Streak
+  conceptStreak: 0,
+  lastConceptDate: null,
+
+  // ── LOAD CURRENT TOPIC ──
+  loadSavedTopic: async () => {
+    try {
+      const { data } = await supabase
+        .from('explorer_topics')
+        .select('*')
+        .eq('completed', false)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        const readSet = new Set(data.read_concepts || []);
+        set({
+          weeklyTopic: data.topic_data,
+          dailyConcepts: data.concepts || [],
+          books: data.books || [],
+          papers: data.papers || [],
+          currentTopicId: data.id,
+          currentNotes: data.notes || '',
+          readItems: readSet,
+          lastGenerated: data.created_at,
+        });
+      }
+    } catch (err) {
+      console.error('Explorer loadSavedTopic error:', err);
+    }
+  },
+
+  // ── LOAD ARCHIVE ──
+  loadArchive: async () => {
+    try {
+      const { data } = await supabase
+        .from('explorer_topics')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      set({ topicArchive: data || [] });
+    } catch (err) {
+      console.error('Explorer loadArchive error:', err);
+    }
+  },
+
+  // ── LOAD KNOWLEDGE DEPTH ──
+  loadKnowledgeDepth: async () => {
+    try {
+      const { data } = await supabase
+        .from('knowledge_depth')
+        .select('*')
+        .order('depth_score', { ascending: false });
+
+      set({ knowledgeDepth: data || [] });
+    } catch (err) {
+      console.error('Knowledge depth load error:', err);
+    }
+
+    // Load streak
+    try {
+      const { data } = await supabase
+        .from('knowledge_depth')
+        .select('*')
+        .eq('domain', '_streak')
+        .single()
+      
+      if (data) {
+        set({ 
+          conceptStreak: data.brain_drops || 0,
+          lastConceptDate: null // We'll rely on session logic or add a column if needed, for now use brain_drops as streak count
+        })
+      }
+    } catch {}
+  },
+
+  updateConceptStreak: async () => {
+    const { getTodayIST } = await import('../lib/dateUtils')
+    const today = getTodayIST()
+    const { lastConceptDate, conceptStreak } = get()
+    
+    if (lastConceptDate === today) return 
+    
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().split('T')[0]
+    
+    const newStreak = lastConceptDate === yesterdayStr 
+      ? conceptStreak + 1 
+      : 1
+    
+    set({ conceptStreak: newStreak, lastConceptDate: today })
+    
+    await supabase
+      .from('knowledge_depth')
+      .upsert({ 
+        domain: '_streak',
+        brain_drops: newStreak,
+        topics_explored: newStreak
+      }, { onConflict: 'domain' })
+
+    if (newStreak % 7 === 0) {
+      const { triggerJarvisToast } = await import('../components/JarvisToast')
+      triggerJarvisToast({
+        type: 'success',
+        title: `${newStreak} Day Explorer Streak`,
+        message: 'Reading daily. Knowledge compounds.',
+        xp: 25
+      })
+    }
+  },
+
+  generateQuiz: async (concept) => {
+    try {
+      const result = await callGroq({
+        messages: [{
+          role: 'user',
+          content: `Generate exactly 2 retention questions for this concept: "${concept.title}"
+          Context: ${concept.summary || concept.title}
+          
+          Return ONLY valid JSON array, no markdown:
+          [
+            {
+              "question": "...",
+              "options": ["A: ...", "B: ...", "C: ...", "D: ..."],
+              "correct": 0,
+              "explanation": "..."
+            },
+            {
+              "question": "...",
+              "options": ["A: ...", "B: ...", "C: ...", "D: ..."],
+              "correct": 2,
+              "explanation": "..."
+            }
+          ]`
+        }],
+        max_tokens: 500,
+        temperature: 0.6
+      })
+
+      if (!result.error) {
+        const clean = result.text.replace(/```json|```/g, '').trim()
+        const questions = JSON.parse(clean)
+        set({ 
+          activeQuiz: { 
+            concept: concept.title,
+            questions,
+            currentQ: 0,
+            score: 0,
+            done: false
+          }
+        })
+      }
+    } catch (err) {
+      console.error('quiz gen error:', err)
+    }
+  },
+
+  answerQuiz: (answerIndex) => {
+    const { activeQuiz } = get()
+    if (!activeQuiz) return
+    
+    const isCorrect = answerIndex === activeQuiz.questions[activeQuiz.currentQ].correct
+    const newScore = activeQuiz.score + (isCorrect ? 1 : 0)
+    const isLast = activeQuiz.currentQ === activeQuiz.questions.length - 1
+
+    if (isLast) {
+      set({ 
+        activeQuiz: { 
+          ...activeQuiz, 
+          score: newScore, 
+          done: true,
+          lastAnswer: answerIndex
+        },
+        quizHistory: {
+          ...get().quizHistory,
+          [activeQuiz.concept]: { 
+            score: newScore, 
+            total: activeQuiz.questions.length,
+            date: new Date().toISOString()
+          }
+        }
+      })
+    } else {
+      set({
+        activeQuiz: {
+          ...activeQuiz,
+          score: newScore,
+          currentQ: activeQuiz.currentQ + 1,
+          lastAnswer: answerIndex
+        }
+      })
+    }
+  },
+
+  dismissQuiz: () => set({ activeQuiz: null }),
+
+  generateConnections: async () => {
+    const { topicArchive } = get()
+    if (!topicArchive || topicArchive.length < 3) return
+    
+    set({ isGeneratingConnections: true })
+    
+    try {
+      const topicTitles = topicArchive
+        .slice(0, 8)
+        .map(t => t.topic_data?.title || t.domain)
+        .join(', ')
+
+      const result = await callGroq({
+        messages: [{
+          role: 'user',
+          content: `These are Abhishek's recent study topics: ${topicTitles}
+          
+          Find 3 non-obvious intellectual connections between these topics. Each connection must reference exactly 2 of the topics listed.
+          
+          Return ONLY valid JSON, no markdown:
+          [
+            {
+              "topic1": "...",
+              "topic2": "...",
+              "connection": "One sentence explaining the link",
+              "insight": "Why this matters for an AI engineer"
+            }
+          ]`
+        }],
+        max_tokens: 400,
+        temperature: 0.8
+      })
+
+      if (!result.error) {
+        const clean = result.text.replace(/```json|```/g, '').trim()
+        const connections = JSON.parse(clean)
+        set({ topicConnections: connections })
+      }
+    } catch (err) {
+      console.error('connections error:', err)
+    }
+    set({ isGeneratingConnections: false })
+  },
+
+  generateWeeklyTopic: async () => {
+    set({ isGenerating: true });
+
+    // Mark current topic completed
+    const { currentTopicId } = get();
+    if (currentTopicId) {
+      try {
+        await supabase
+          .from('explorer_topics')
+          .update({ completed: true, completed_at: new Date().toISOString() })
+          .eq('id', currentTopicId);
+      } catch (err) {
+        console.error('Failed to mark topic completed:', err);
+      }
+    }
+
+    try {
+      const { topicArchive, knowledgeDepth } = get();
+
+      // Find which domain has lowest depth score
+      const domainScores = Object.keys(EXPLORER_DOMAINS).map(d => ({
+        domain: d,
+        score: knowledgeDepth?.find(
+          k => k.domain.toLowerCase() === d.toLowerCase()
+        )?.depth_score || 0
+      }));
+
+      const lowestDomain = domainScores
+        .sort((a, b) => a.score - b.score)[0]?.domain;
+
+      const suggestedNext = getNextTopicSuggestion(
+        lowestDomain, topicArchive, knowledgeDepth
+      );
+
+      let pastTopics = '';
+      try {
+        const explorerMemory = await loadMemories(MEMORY_TYPES.EXPLORER, 8)
+        pastTopics = explorerMemory.map(m => m.content).join('\n- ')
+      } catch (memErr) {
+        console.error('Failed to load explorer memory:', memErr)
+      }
+
+      const domains = [
+        'Psychology',
+        'Neuroscience',
+        'Cognitive Science',
+        'Geopolitics',
+        'Artificial Intelligence',
+      ];
+      const randomDomain = domains[Math.floor(Math.random() * domains.length)];
+      const weekNumber = Math.ceil(new Date().getDate() / 7);
+
+      const prompt = `You are an intellectual provocateur curating content for Abhishek — a 20-year-old Indian engineering student who has broken out of the system. He trades forex, builds software, and refuses to be another cog. He has realized that the Indian education system, parenting culture, and society are built on operant conditioning — rewarding compliance and punishing curiosity. He wants to understand reality at its deepest level: how humans are wired, how power operates, how consciousness works, how the world is actually controlled.
+
+He is NOT looking for textbook summaries or Wikipedia-level content. He wants the kind of knowledge that makes you see the world differently the next morning. The kind that makes you question everything you thought you knew. The kind that they don't teach in school because it would make people harder to control.
+
+Generate a weekly exploration package for this domain: ${randomDomain}
+
+The topic must be SPECIFIC and UNCOMFORTABLE — not "Introduction to Psychology" but something like "How Manufactured Consent Shapes What You Think You Want" or "The Neuroscience of Why Obedience Feels Safe."
+
+Return ONLY valid JSON, no markdown, no backticks, no explanation:
+{
+  "topic": {
+    "title": "specific, provocative title that makes you want to read immediately",
+    "subtitle": "one sentence that creates urgency — why THIS, why NOW, why does ignoring this cost you",
+    "domain": "${randomDomain}",
+    "whyItMatters": "3 sentences. Start with a concrete uncomfortable truth. Then explain the mechanism. Then tell Abhishek exactly what changes in how he sees the world after understanding this. Be specific to his life — student, trader, first-gen, Indian system survivor.",
+    "bigQuestion": "one question so uncomfortable it will disturb his thinking all week. Not philosophical fluff — something that directly challenges an assumption he lives by.",
+    "weekNumber": ${weekNumber},
+    "ignitionHook": "2 sentences that would make anyone drop everything and start reading right now. This is the hook that makes the topic feel urgent and personal."
+  },
+  "concepts": [
+    {
+      "title": "concept name",
+      "summary": "4-5 sentences. Explain it like talking to a brilliant friend — no jargon without explanation, no hedging, no academic distancing. Use concrete examples from real life, history, or science. Make it land.",
+      "whyForYou": "2 sentences connecting this DIRECTLY to Abhishek's actual life — his trading psychology, his experience with the Indian education system, his family dynamics, his ambition to build something real. Be specific, not generic.",
+      "domain": "${randomDomain}",
+      "depthLevel": "Foundation|Intermediate|Advanced"
+    }
+  ],
+  "books": [
+    {
+      "title": "exact book title",
+      "author": "exact author name",
+      "why": "3 sentences. What specific insight does this book contain that you cannot get elsewhere? What will Abhishek think differently after reading it? Why this book over every other book on this topic?",
+      "difficulty": "Accessible|Intermediate|Dense",
+      "readThisIf": "one sentence finishing 'Read this if you want to understand...'"
+    }
+  ],
+  "papers": [
+    {
+      "title": "real research paper title — must be a real paper that exists",
+      "authors": "real author names",
+      "journal": "real journal name",
+      "year": "real publication year",
+      "plainSummary": "4 sentences. What did they actually find? What was surprising? What does it prove or disprove? Why does it matter beyond academia?",
+      "mindblowFactor": "one sentence — the single most surprising finding from this paper"
+    }
+  ],
+  "roadmapPosition": {
+    "phase": "Awakening|Foundation|Deepening|Mastery",
+    "prerequisite": "what concept or topic should Abhishek already understand before this",
+    "leadsTo": "what topic this naturally opens up next",
+    "coreSkill": "the single mental skill this topic builds — e.g. 'pattern recognition in power systems' or 'emotional regulation awareness'"
+  }
+}
+
+Generate exactly 5 concepts that build on each other (concept 1 is foundation, concept 5 is advanced synthesis). Generate 3 books and 3 papers. All books and papers must be REAL — accurate titles, real authors, real journals.
+      
+      ${pastTopics ? `
+      PAST EXPLORER SESSIONS:
+      - ${pastTopics}
+
+      Generate a topic that CONNECTS TO or BUILDS ON past topics.
+      Don't repeat domains already heavily covered.
+      Find unexpected connections between past topics.
+      ` : ''}
+      
+      ${suggestedNext ? `
+LEARNING PATH GUIDANCE:
+The lowest-depth domain is: ${lowestDomain}
+Suggested next topic on the path: "${suggestedNext.title}" 
+  (${suggestedNext.level} level)
+
+Strongly consider generating this or a closely related topic.
+The goal is gradual progression — beginner → intermediate → advanced.
+` : ''}`;
+
+      const raw = await groqFetch(prompt);
+      if (!raw) {
+        set({ isGenerating: false });
+        return;
+      }
+      const cleaned = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+
+      const topic = parsed.topic;
+      const concepts = parsed.concepts || [];
+      const books = parsed.books || [];
+      const papers = parsed.papers || [];
+      const roadmapPosition = parsed.roadmapPosition || {};
+
+      // Save to Supabase
+      const { data: saved } = await supabase
+        .from('explorer_topics')
+        .insert({
+          topic_data: { ...topic, roadmapPosition },
+          concepts,
+          books,
+          papers,
+          domain: topic.domain,
+          week_number: topic.weekNumber,
+          completed: false,
+          read_concepts: [],
+          notes: '',
+          depth_score: 0,
+        })
+        .select()
+        .single();
+
+      // Update knowledge depth for this domain (manual update — no RPC needed)
+      try {
+        const { data: kd } = await supabase
+          .from('knowledge_depth')
+          .select('*')
+          .eq('domain', topic.domain)
+          .single();
+
+        if (kd) {
+          await supabase
+            .from('knowledge_depth')
+            .update({
+              topics_explored: (kd.topics_explored || 0) + 1,
+              last_updated: new Date().toISOString(),
+            })
+            .eq('domain', topic.domain);
+        }
+      } catch (e) {
+        // knowledge_depth table may not exist yet — silent fail
+      }
+
+      set({
+        weeklyTopic: { ...topic, roadmapPosition },
+        dailyConcepts: concepts,
+        books,
+        papers,
+        currentTopicId: saved?.id || null,
+        currentNotes: '',
+        readItems: new Set(),
+        isGenerating: false,
+        lastGenerated: new Date().toISOString(),
+      });
+
+      saveExplorerMemory(topic.title || 'Weekly topic', 0)
+
+
+      // Reload archive and depth
+      get().loadArchive();
+      get().loadKnowledgeDepth();
+    } catch (err) {
+      console.error('Explorer generate error:', err);
+      set({ isGenerating: false });
+    }
+  },
+
+  // ── MARK CONCEPT READ (persisted) ──
+  markRead: async (concept) => {
+    const title = concept.title || concept
+    const { currentTopicId, readItems } = get();
+    const newSet = new Set([...readItems, title]);
+    set({ readItems: newSet });
+
+    // Generate retention quiz
+    if (typeof concept === 'object') {
+      get().generateQuiz(concept)
+    }
+    
+    // Update streak
+    get().updateConceptStreak()
+
+    if (currentTopicId) {
+      try {
+        const readArray = [...newSet];
+        await supabase
+          .from('explorer_topics')
+          .update({
+            read_concepts: readArray,
+            depth_score: readArray.length * 20,
+          })
+          .eq('id', currentTopicId);
+
+        // Update knowledge depth
+        const { weeklyTopic } = get();
+        if (weeklyTopic?.domain) {
+          const { data: kd } = await supabase
+            .from('knowledge_depth')
+            .select('*')
+            .eq('domain', weeklyTopic.domain)
+            .single();
+
+          if (kd) {
+            await supabase
+              .from('knowledge_depth')
+              .update({
+                concepts_read: (kd.concepts_read || 0) + 1,
+                depth_score: (kd.depth_score || 0) + 20,
+                last_updated: new Date().toISOString(),
+              })
+              .eq('domain', weeklyTopic.domain);
+          }
+        }
+
+        get().loadKnowledgeDepth();
+
+        // Save memory
+        const topic = get().weeklyTopic?.title || 'Unknown topic'
+        const readCount = get().readItems?.size || 0
+        saveExplorerMemory(topic, readCount) // fire and forget
+      } catch (err) {
+        console.error('markRead persist error:', err);
+      }
+    }
+  },
+
+  // ── SAVE NOTES ──
+  saveNotes: async (notes) => {
+    set({ currentNotes: notes, isSavingNotes: true });
+    const { currentTopicId } = get();
+    if (currentTopicId) {
+      try {
+        await supabase
+          .from('explorer_topics')
+          .update({ notes })
+          .eq('id', currentTopicId);
+      } catch (err) {
+        console.error('saveNotes error:', err);
+      }
+    }
+    setTimeout(() => set({ isSavingNotes: false }), 500);
+  },
+
+  // ── EXPORT TO GOOGLE DOCS (clipboard + open docs.new) ──
+  exportToGoogleDocs: (topic, concepts, papers, books, notes, brainDrops) => {
+    const topicBrainDrops = brainDrops.filter(
+      (d) => d.topic_title === topic?.title
+    );
+
+    const line = '='.repeat(60);
+
+    const docContent = `EXPLORER — ${topic?.domain?.toUpperCase() || 'RESEARCH'}
+${topic?.title || ''}
+Generated: ${new Date().toLocaleDateString('en-IN')}
+${line}
+
+SUBTITLE
+${topic?.subtitle || ''}
+
+WHY THIS MATTERS
+${topic?.whyItMatters || ''}
+
+THIS WEEK'S BIG QUESTION
+"${topic?.bigQuestion || ''}"
+
+IGNITION HOOK
+${topic?.ignitionHook || ''}
+
+${line}
+5 CONCEPTS
+${line}
+
+${concepts
+  .map(
+    (c, i) => `${i + 1}. ${c.title}
+   Level: ${c.depthLevel || 'Foundation'}
+   
+   ${c.summary}
+   
+   WHY FOR YOU: ${c.whyForYou}
+`
+  )
+  .join('\n')}
+
+${line}
+RESEARCH PAPERS
+${line}
+
+${papers
+  .map(
+    (p, i) => `${i + 1}. ${p.title}
+   ${p.authors} · ${p.journal} · ${p.year}
+   
+   ${p.plainSummary}
+   
+   MINDBLOW: ${p.mindblowFactor || ''}
+`
+  )
+  .join('\n')}
+
+${line}
+BOOKS
+${line}
+
+${books
+  .map(
+    (b, i) => `${i + 1}. ${b.title} — ${b.author}
+   Difficulty: ${b.difficulty}
+   ${b.why}
+   Read if: ${b.readThisIf || ''}
+`
+  )
+  .join('\n')}
+
+${line}
+MY RESEARCH NOTES
+${line}
+
+${notes || '(No notes yet)'}
+
+${line}
+BRAIN DROPS FROM THIS TOPIC
+${line}
+
+${
+  topicBrainDrops.length > 0
+    ? topicBrainDrops.map((d, i) => `${i + 1}. ${d.content}`).join('\n')
+    : '(No brain drops yet)'
+}
+
+${line}
+ROADMAP POSITION
+${line}
+
+Phase: ${topic?.roadmapPosition?.phase || 'Foundation'}
+This topic builds: ${topic?.roadmapPosition?.coreSkill || ''}
+Prerequisite: ${topic?.roadmapPosition?.prerequisite || 'None'}
+Opens up next: ${topic?.roadmapPosition?.leadsTo || 'TBD'}
+`;
+
+    navigator.clipboard.writeText(docContent).then(() => {
+      window.open('https://docs.new', '_blank');
+    }).catch(() => {
+      const blob = new Blob([docContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    });
+  },
+
+  // ── BRAIN DROPS ──
+  addBrainDrop: async (content, topicTitle) => {
+    try {
+      const { data } = await supabase
+        .from('brain_drops')
+        .insert({
+          content,
+          topic_title: topicTitle,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (data) {
+        set((state) => ({ brainDrops: [data, ...state.brainDrops] }));
+      }
+
+      // Update knowledge depth brain drops count
+      const { weeklyTopic } = get();
+      if (weeklyTopic?.domain) {
+        const { data: kd } = await supabase
+          .from('knowledge_depth')
+          .select('*')
+          .eq('domain', weeklyTopic.domain)
+          .single();
+
+        if (kd) {
+          await supabase
+            .from('knowledge_depth')
+            .update({
+              brain_drops: (kd.brain_drops || 0) + 1,
+              depth_score: (kd.depth_score || 0) + 5,
+              last_updated: new Date().toISOString(),
+            })
+            .eq('domain', weeklyTopic.domain);
+
+          get().loadKnowledgeDepth();
+        }
+      }
+    } catch (err) {
+      console.error('Brain drop error:', err);
+    }
+  },
+
+  loadBrainDrops: async () => {
+    try {
+      const { data } = await supabase
+        .from('brain_drops')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      set({ brainDrops: data || [] });
+    } catch (err) {
+      console.error('Load brain drops error:', err);
+    }
+  },
+
+  // ── LOAD ARCHIVED TOPIC INTO VIEW ──
+  viewArchivedTopic: (archivedEntry) => {
+    set({
+      weeklyTopic: archivedEntry.topic_data,
+      dailyConcepts: archivedEntry.concepts || [],
+      books: archivedEntry.books || [],
+      papers: archivedEntry.papers || [],
+      currentTopicId: archivedEntry.id,
+      currentNotes: archivedEntry.notes || '',
+      readItems: new Set(archivedEntry.read_concepts || []),
+      lastGenerated: archivedEntry.created_at,
+    });
+  },
+}));
