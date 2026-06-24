@@ -3,21 +3,27 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // req.url will be e.g. /openai/v1/chat/completions
-  const path = req.url || '/openai/v1/chat/completions';
+  const apiKey = process.env.VITE_GROQ_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'GROQ API key not configured' });
+  }
 
-  const groqRes = await fetch(
-    `https://api.groq.com${path}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.VITE_GROQ_API_KEY}`,
-      },
-      body: JSON.stringify(req.body),
-    }
-  );
+  try {
+    const groqRes = await fetch(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(req.body),
+      }
+    );
 
-  const data = await groqRes.json();
-  res.status(groqRes.status).json(data);
+    const data = await groqRes.json();
+    res.status(groqRes.status).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }
