@@ -6,7 +6,7 @@ import {
   SUBJECTS, getStudyDayNumber, studyDayToDate, getScheduleForDay,
   S1_SEQUENCE, S2_SEQUENCE, S3_SEQUENCE, S5_SEQUENCE,
   S1_LECTURES, S2_LECTURES, S3_LECTURES, S5_LECTURES,
-  DSA_STEPS, S5_START_DAY,
+  DSA_STEPS, S5_START_DAY, TOTAL_DSA_PROBLEMS,
 } from '../lib/aiBatchData';
 
 const SUBJECT_KEYS = ['S1', 'S2', 'S3', 'S4', 'S5'];
@@ -27,14 +27,24 @@ export default function MyBatch() {
     toggleCompletion(dateStr, sk, lecDayNum, schedule);
   };
 
-  // S4: each topic covers 4 problems = 2 study days
-  const handleS4TopicToggle = (topicStart) => {
-    const d1 = Math.ceil(topicStart / 2);
-    const d2 = d1 + 1;
-    const allDone = completedBySubject.S4.has(d1) && completedBySubject.S4.has(d2);
-    for (const dayNum of [d1, d2]) {
+  // S4: each problem maps to a study day (2 problems / day). Toggle that day.
+  const dayForProblem = (globalIdx) => Math.floor(globalIdx / 2) + 1;
+
+  const handleS4ProblemToggle = (globalIdx) => {
+    const dayNum = dayForProblem(globalIdx);
+    const date = studyDayToDate(dayNum);
+    if (!date) return;
+    const dateStr = date.toISOString().split('T')[0];
+    const schedule = getScheduleForDay(dayNum);
+    toggleCompletion(dateStr, 'S4', dayNum, schedule);
+  };
+
+  // Toggle every day spanned by a whole section (mark all / clear all)
+  const handleS4SectionToggle = (problems) => {
+    const days = [...new Set(problems.map(p => dayForProblem(p.globalIdx)))];
+    const allDone = days.every(d => completedBySubject.S4.has(d));
+    for (const dayNum of days) {
       const isDone = completedBySubject.S4.has(dayNum);
-      // mark undone ones when ticking; unmark done ones when unticking
       if (allDone ? isDone : !isDone) {
         const date = studyDayToDate(dayNum);
         if (!date) continue;
@@ -62,19 +72,22 @@ export default function MyBatch() {
   const toggleMod = (key) =>
     setExpandedModules(prev => ({ ...prev, [key]: !prev[key] }));
 
-  // Pre-compute S4 step boundaries (each topic ≈ 4 problems)
+  // Pre-compute S4 step/section/problem global indices (one entry per real problem)
   const stepsWithBounds = useMemo(() => {
-    let cum = 0;
+    let gi = 0; // running global problem index (0-based)
     return DSA_STEPS.map(step => {
-      const count = step.topics.length * 4;
-      const start = cum + 1;
-      cum += count;
-      return { ...step, startProblem: start, endProblem: cum };
+      const stepStart = gi;
+      const sections = step.sections.map(sec => {
+        const secStart = gi;
+        const problems = sec.problems.map(name => ({ name, globalIdx: gi++ }));
+        return { name: sec.name, problems, startIdx: secStart, endIdx: gi - 1 };
+      });
+      return { ...step, sections, startIdx: stepStart, endIdx: gi - 1, count: gi - stepStart };
     });
   }, []);
 
   const s4DaysDone = completedBySubject.S4.size;
-  const problemsSolved = Math.min(s4DaysDone * 2, 474);
+  const problemsSolved = Math.min(s4DaysDone * 2, TOTAL_DSA_PROBLEMS);
 
   // Overall stats
   const totalLectures = S1_LECTURES.length + S2_LECTURES.length + S3_LECTURES.length + S5_LECTURES.length;
@@ -116,7 +129,7 @@ export default function MyBatch() {
           {SUBJECT_KEYS.map(sk => {
             const sub = SUBJECTS[sk];
             const done = sk === 'S4' ? problemsSolved : completedBySubject[sk].size;
-            const total = sk === 'S4' ? 474 : S_LECTURES[sk].length;
+            const total = sk === 'S4' ? TOTAL_DSA_PROBLEMS : S_LECTURES[sk].length;
             const pct = Math.round((done / total) * 100);
             return (
               <div key={sk} className="bg-white/5 rounded-xl p-3 border border-white/10">
@@ -152,7 +165,7 @@ export default function MyBatch() {
         {SUBJECT_KEYS.map(sk => {
           const sub = SUBJECTS[sk];
           const done = sk === 'S4' ? problemsSolved : completedBySubject[sk].size;
-          const total = sk === 'S4' ? 474 : S_LECTURES[sk]?.length ?? 0;
+          const total = sk === 'S4' ? TOTAL_DSA_PROBLEMS : S_LECTURES[sk]?.length ?? 0;
           const pct = total > 0 ? Math.round((done / total) * 100) : 0;
           const isActive = activeSubject === sk;
           return (
@@ -360,7 +373,7 @@ export default function MyBatch() {
         {/* S4 — DSA */}
         {activeSubject === 'S4' && ((() => {
           const sub = SUBJECTS.S4;
-          const pct = Math.round((problemsSolved / 474) * 100);
+          const pct = Math.round((problemsSolved / TOTAL_DSA_PROBLEMS) * 100);
           return (
             <div className="bg-white rounded-2xl border border-[#E5E0D8] overflow-hidden">
               <div className="p-5" style={{ backgroundColor: sub.bg }}>
@@ -374,7 +387,7 @@ export default function MyBatch() {
                         <p className="text-sm font-bold text-[#1A1A2E] font-['Inter']">DSA — Striver A2Z</p>
                       </div>
                       <p className="text-[10px] text-[#9A9590] font-['Space_Mono']">
-                        {problemsSolved} / 474 problems · {s4DaysDone} study days
+                        {problemsSolved} / {TOTAL_DSA_PROBLEMS} problems · {s4DaysDone} study days
                       </p>
                     </div>
                   </div>
@@ -393,15 +406,12 @@ export default function MyBatch() {
 
               <div className="divide-y divide-[#F5F4F0]">
                 {stepsWithBounds.map((step, si) => {
-                  // Count topics done by checking the two specific day numbers each topic maps to
-                  const topicsDoneInStep = step.topics.filter((_, ti) => {
-                    const ts = step.startProblem + ti * 4;
-                    const d1 = Math.ceil(ts / 2);
-                    return completedBySubject.S4.has(d1) && completedBySubject.S4.has(d1 + 1);
-                  }).length;
-                  const stepDone   = topicsDoneInStep === step.topics.length;
-                  const stepActive = !stepDone && topicsDoneInStep > 0;
-                  const reached    = topicsDoneInStep;
+                  // A problem is "done" when its mapped study day is complete
+                  const isProbDone = (gi) => completedBySubject.S4.has(dayForProblem(gi));
+                  const allProbs   = step.sections.flatMap(sec => sec.problems);
+                  const probsDone  = allProbs.filter(p => isProbDone(p.globalIdx)).length;
+                  const stepDone   = probsDone === allProbs.length;
+                  const stepActive = !stepDone && probsDone > 0;
                   const expanded   = !!expandedModules[`S4-${si}`];
 
                   return (
@@ -431,8 +441,7 @@ export default function MyBatch() {
                             {step.step} — {step.name}
                           </p>
                           <p className="text-[10px] text-[#9A9590] font-['Space_Mono'] mt-0.5">
-                            Problems #{step.startProblem}–{step.endProblem}
-                            {stepActive && ` · ${reached}/${step.topics.length} topics done`}
+                            Problems #{step.startIdx + 1}–{step.endIdx + 1} · {probsDone}/{allProbs.length} done
                           </p>
                         </div>
 
@@ -450,36 +459,61 @@ export default function MyBatch() {
                             exit={{ opacity: 0, height: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="px-4 pb-4 pl-16 space-y-0.5">
-                              {step.topics.map((topic, ti) => {
-                                const topicStart = step.startProblem + ti * 4;
-                                const d1 = Math.ceil(topicStart / 2);
-                                const d2 = d1 + 1;
-                                const topicDone   = completedBySubject.S4.has(d1) && completedBySubject.S4.has(d2);
-                                const topicActive = !topicDone && (completedBySubject.S4.has(d1) || completedBySubject.S4.has(d2));
+                            <div className="px-4 pb-4 pl-12 space-y-3">
+                              {step.sections.map((sec, sj) => {
+                                const secDone = sec.problems.filter(p => isProbDone(p.globalIdx)).length;
+                                const secComplete = secDone === sec.problems.length;
                                 return (
-                                  <div
-                                    key={ti}
-                                    onClick={() => handleS4TopicToggle(topicStart)}
-                                    className="flex items-start gap-2.5 py-1.5 px-2 rounded-lg transition-all cursor-pointer hover:bg-black/5"
-                                    style={topicDone ? { backgroundColor: sub.color + '0C' } : {}}
-                                  >
+                                  <div key={sj}>
+                                    {/* Sub-section header */}
                                     <div
-                                      className="w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5"
-                                      style={topicDone
-                                        ? { backgroundColor: sub.color, borderColor: sub.color }
-                                        : topicActive
-                                        ? { borderColor: sub.color }
-                                        : { borderColor: '#D5D0C8' }
-                                      }
+                                      onClick={() => handleS4SectionToggle(sec.problems)}
+                                      className="flex items-center gap-2 mb-1 cursor-pointer group"
                                     >
-                                      {topicDone && <Check size={9} color="white" strokeWidth={3} />}
-                                      {topicActive && <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: sub.color }} />}
+                                      <span className="text-[10px] font-bold font-['Inter'] uppercase tracking-wide"
+                                        style={{ color: secComplete ? sub.color : '#1A1A2E' }}>
+                                        {sec.name}
+                                      </span>
+                                      <span className="text-[9px] font-bold font-['Space_Mono'] px-1.5 py-0.5 rounded-full"
+                                        style={{ backgroundColor: sub.color + '18', color: sub.color }}>
+                                        {secDone}/{sec.problems.length}
+                                      </span>
+                                      <span className="text-[8px] text-[#C5C0B8] font-['Space_Mono'] opacity-0 group-hover:opacity-100 transition-opacity">
+                                        tap to {secComplete ? 'clear' : 'mark all'}
+                                      </span>
                                     </div>
-                                    <p className="text-[11px] font-['Inter'] leading-snug"
-                                      style={{ color: topicDone ? sub.color : '#3D3830' }}>
-                                      {topic}
-                                    </p>
+                                    {/* Individual problems */}
+                                    <div className="space-y-0.5">
+                                      {sec.problems.map((p) => {
+                                        const done = isProbDone(p.globalIdx);
+                                        return (
+                                          <div
+                                            key={p.globalIdx}
+                                            onClick={() => handleS4ProblemToggle(p.globalIdx)}
+                                            className="flex items-start gap-2.5 py-1 px-2 rounded-lg transition-all cursor-pointer hover:bg-black/5"
+                                            style={done ? { backgroundColor: sub.color + '0C' } : {}}
+                                          >
+                                            <div
+                                              className="w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5"
+                                              style={done
+                                                ? { backgroundColor: sub.color, borderColor: sub.color }
+                                                : { borderColor: '#D5D0C8' }
+                                              }
+                                            >
+                                              {done && <Check size={9} color="white" strokeWidth={3} />}
+                                            </div>
+                                            <span className="text-[9px] font-bold font-['Space_Mono'] shrink-0 mt-0.5"
+                                              style={{ color: sub.color + '70' }}>
+                                              {p.globalIdx + 1}
+                                            </span>
+                                            <p className="text-[11px] font-['Inter'] leading-snug"
+                                              style={{ color: done ? sub.color : '#3D3830' }}>
+                                              {p.name}
+                                            </p>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
                                   </div>
                                 );
                               })}

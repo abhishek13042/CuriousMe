@@ -642,144 +642,419 @@ export const S3_SEQUENCE = [
 
 // ─────────────────────────────────────────
 // S4 — DSA SEQUENCE HELPER
-// Striver A2Z: 474 problems, 2/day
+// Striver A2Z: 532 problems across 49 sub-sections, 2/day → 266 study days
 // ─────────────────────────────────────────
 export const DSA_STEPS = [
   {
-    step: 'Step 1', name: 'Learn the Basics',
-    topics: [
-      'Basic Syntax, Input/Output and STL',
-      'Pattern Problems — Nested Loops',
-      'Basic Recursion — Understanding the Call Stack',
-      'Basic Hashing — Frequency Count',
-      'Basic Sorting — Selection, Bubble, Insertion',
-      'Basic Math — Divisors, Primes, GCD, LCM',
+    step: 'Step 1', name: 'Learn the basics',
+    sections: [
+      { name: 'Things to Know in C++/Java/Python or any language', problems: [
+        "Input/Output Basics", "C++ / Language Basics", "If-Else & Else-If Statements",
+        "Switch Case Statement", "What are Arrays & Strings?", "For Loops",
+        "While Loops", "Functions — Pass by Reference vs Value", "Theory with Examples",
+      ]},
+      { name: 'Build-up Logical Thinking', problems: [
+        "Patterns — Easy and Medium", "Patterns — Hard",
+      ]},
+      { name: 'Patterns', problems: [
+        "Pattern 1 — Rectangular Star Pattern", "Pattern 2 — Right-Angled Star Triangle",
+        "Pattern 3 — Right-Angled Number Triangle", "Pattern 4 — Repeating Number Triangle",
+        "Pattern 5 — Inverted Right-Angled Star Triangle", "Pattern 6 — Inverted Number Triangle",
+        "Pattern 7 — Star Pyramid", "Pattern 8 — Inverted Star Pyramid",
+        "Pattern 9 — Star Diamond", "Pattern 10 — Half-Diamond Star",
+        "Pattern 11 — Binary Number Triangle", "Pattern 12 — Number Crown (1234..4321)",
+        "Pattern 13 — Increasing Number Triangle", "Pattern 14 — Increasing Letter Triangle",
+        "Pattern 15 — Reverse Letter Triangle", "Pattern 16 — Alpha-Ramp Pattern",
+        "Pattern 17 — Alpha-Hill (Letter Pyramid)", "Pattern 18 — Reverse Alphabet Triangle",
+        "Pattern 19 — Symmetric Void Pattern", "Pattern 20 — Symmetric Butterfly",
+        "Pattern 21 — Hollow Rectangle", "Pattern 22 — Concentric Number Square",
+      ]},
+      { name: 'Learn STL/Java-Collections or similar thing in your language', problems: [
+        "C++ STL", "Java Collections",
+      ]},
+      { name: 'Know Basic Maths', problems: [
+        "Count All Digits of a Number", "Reverse a Number", "Palindrome Number",
+        "GCD of Two Numbers", "Check if Number is Armstrong", "Print All Divisors",
+        "Check for Prime Number",
+      ]},
+      { name: 'Learn Basic Recursion', problems: [
+        "Understand Recursion — Print Something N Times", "Print Name N Times using Recursion",
+        "Print 1 to N using Recursion", "Print N to 1 using Recursion",
+        "Sum of First N Numbers", "Factorial of a Number", "Reverse an Array (Recursion)",
+        "Check if String is Palindrome", "Fibonacci Number",
+      ]},
+      { name: 'Learn Basic Hashing', problems: [
+        "Basic Hashing (Theory)", "Counting Frequencies of Array Elements",
+        "Highest / Lowest Occurring Element",
+      ]},
     ]
   },
   {
-    step: 'Step 2', name: 'Sorting Techniques',
-    topics: ['Merge Sort', 'Quick Sort', 'Recursive Bubble and Insertion Sort']
-  },
-  {
-    step: 'Step 3', name: 'Arrays',
-    topics: [
-      'Easy — Largest, 2nd Largest, Check Sorted',
-      'Easy — Remove Duplicates, Rotate Array, Move Zeros',
-      'Easy — Linear Search, Union and Intersection',
-      'Medium — Two Sum, Sort 0/1/2, Majority Element',
-      'Medium — Kadane\'s Algorithm, Stock Buy Sell, Rearrange',
-      'Medium — Next Permutation, Leaders in Array',
-      'Hard — 3Sum, 4Sum, Largest Subarray Zero Sum',
-      'Hard — Count Inversions, Merge Overlapping Intervals',
-      'Hard — Merge Two Sorted Arrays Without Space, Missing Number',
+    step: 'Step 2', name: 'Learn Important Sorting Techniques',
+    sections: [
+      { name: 'Sorting-I', problems: [
+        "Selection Sort", "Bubble Sort", "Insertion Sort",
+      ]},
+      { name: 'Sorting-II', problems: [
+        "Merge Sort", "Recursive Bubble Sort", "Recursive Insertion Sort", "Quick Sort",
+      ]},
     ]
   },
   {
-    step: 'Step 4', name: 'Binary Search',
-    topics: [
-      'BS on 1D Arrays — Classic Binary Search',
-      'BS on 1D Arrays — Floor, Ceil, First/Last Occurrence',
-      'BS on 1D Arrays — Count Occurrences, Mountain Array',
-      'BS on Answers — Min Days, Koko Eating, Capacity to Ship',
-      'BS on 2D Arrays — Search in Row-Column Sorted Matrix',
+    step: 'Step 3', name: 'Solve Problems on Arrays [Easy -> Medium -> Hard]',
+    sections: [
+      { name: 'Easy', problems: [
+        "Largest Element in Array", "Second Largest Element", "Check if Array is Sorted",
+        "Remove Duplicates from Sorted Array", "Left Rotate Array by One", "Left Rotate Array by K Places",
+        "Move Zeros to End", "Linear Search", "Union of Two Sorted Arrays",
+        "Find Missing Number", "Maximum Consecutive Ones", "Find Number Appearing Once (others twice)",
+        "Longest Subarray with Sum K (Positives)", "Longest Subarray with Sum K (Pos + Neg)",
+      ]},
+      { name: 'Medium', problems: [
+        "Two Sum", "Sort an Array of 0s, 1s and 2s", "Majority Element (> n/2)",
+        "Kadane's Algorithm — Max Subarray Sum", "Print Subarray with Maximum Sum", "Stock Buy and Sell",
+        "Rearrange Array Elements by Sign", "Next Permutation", "Leaders in an Array",
+        "Longest Consecutive Sequence", "Set Matrix Zeroes", "Rotate Matrix by 90 Degrees",
+        "Print Matrix in Spiral Manner", "Count Subarrays with Given Sum",
+      ]},
+      { name: 'Hard', problems: [
+        "Pascal's Triangle", "Majority Element (> n/3)", "3 Sum", "4 Sum",
+        "Largest Subarray with Sum 0", "Count Subarrays with XOR K", "Merge Overlapping Subintervals",
+        "Merge Two Sorted Arrays Without Extra Space", "Find the Repeating and Missing Number",
+        "Count Inversions", "Reverse Pairs", "Maximum Product Subarray",
+      ]},
     ]
   },
   {
-    step: 'Step 5', name: 'Strings',
-    topics: [
-      'Easy — Reverse, Palindrome, Largest Odd Number',
-      'Medium — Longest Palindromic Substring, Anagrams',
-      'Medium — String Compression, Roman to Integer',
+    step: 'Step 4', name: 'Binary Search [1D, 2D Arrays, Search Space]',
+    sections: [
+      { name: 'BS on 1D Arrays', problems: [
+        "Search X in Sorted Array", "Lower Bound", "Upper Bound", "Search Insert Position",
+        "Floor and Ceil in Sorted Array", "First and Last Occurrence", "Count Occurrences in Sorted Array",
+        "Search in Rotated Sorted Array I", "Search in Rotated Sorted Array II",
+        "Find Minimum in Rotated Sorted Array", "Find How Many Times Array is Rotated",
+        "Single Element in Sorted Array", "Find Peak Element",
+      ]},
+      { name: 'BS on Answers', problems: [
+        "Find Square Root of a Number", "Find Nth Root of a Number", "Koko Eating Bananas",
+        "Minimum Days to Make M Bouquets", "Find the Smallest Divisor", "Capacity to Ship Packages in D Days",
+        "Kth Missing Positive Number", "Aggressive Cows", "Book Allocation Problem",
+        "Split Array — Largest Sum", "Painter's Partition", "Minimize Max Distance to Gas Station",
+        "Median of Two Sorted Arrays", "Kth Element of Two Sorted Arrays",
+      ]},
+      { name: 'BS on 2D Arrays', problems: [
+        "Find Row with Maximum 1s", "Search in a 2D Matrix", "Search in a 2D Matrix II",
+        "Find Peak Element II", "Matrix Median",
+      ]},
     ]
   },
   {
-    step: 'Step 6', name: 'LinkedList',
-    topics: [
-      'Single LL — Insertion, Deletion, Traversal',
-      'Single LL — Reverse, Middle, Detect Cycle',
-      'Medium — Merge Two Sorted LLs, Remove Nth Node',
-      'Hard — Reverse in Groups, Flattening LL',
-      'Doubly LL — Operations and Problems',
+    step: 'Step 5', name: 'Strings [Basic and Medium]',
+    sections: [
+      { name: 'Basic and Easy String Problems', problems: [
+        "Remove Outermost Parentheses", "Reverse Words in a String", "Largest Odd Number in a String",
+        "Longest Common Prefix", "Isomorphic String", "Rotate String",
+        "Check if Two Strings are Anagrams",
+      ]},
+      { name: 'Medium String Problems', problems: [
+        "Sort Characters by Frequency", "Maximum Nesting Depth of Parentheses", "Roman to Integer",
+        "String to Integer (atoi)", "Count Number of Substrings", "Longest Palindromic Substring",
+        "Sum of Beauty of All Substrings", "Reverse Every Word in a String",
+      ]},
     ]
   },
   {
-    step: 'Step 7', name: 'Recursion & Backtracking',
-    topics: [
-      'Recursion — Subsequences, Subsets',
-      'Backtracking — Permutations, Combinations',
-      'Hard — N-Queens, Sudoku Solver, Word Search',
+    step: 'Step 6', name: 'Learn LinkedList [Single LL, Double LL, Medium, Hard Problems]',
+    sections: [
+      { name: 'Learn 1D LinkedList', problems: [
+        "Introduction to Singly LinkedList", "Insertion at the Head of LL", "Deletion of the Head of LL",
+        "Find the Length of LinkedList", "Search in LinkedList",
+      ]},
+      { name: 'Learn Doubly LinkedList', problems: [
+        "Introduction to Doubly LL", "Insert Node Before Head in DLL", "Delete Head of DLL",
+        "Reverse a Doubly LinkedList",
+      ]},
+      { name: 'Medium Problems of LL', problems: [
+        "Middle of a LinkedList (Tortoise-Hare)", "Reverse a LinkedList (Iterative)", "Reverse a LinkedList (Recursive)",
+        "Detect a Loop in LL", "Find the Starting Point of Loop", "Length of Loop in LL",
+        "Check if LL is Palindrome", "Segregate Odd and Even Nodes", "Remove Nth Node from Back",
+        "Delete the Middle Node of LL", "Sort LinkedList", "Sort LinkedList of 0s, 1s and 2s",
+        "Find Intersection Point of Y LinkedList", "Add One to Number Represented by LL", "Add Two Numbers in LinkedList",
+      ]},
+      { name: 'Medium Problems of DLL', problems: [
+        "Delete All Occurrences of a Key in DLL", "Find Pairs with Given Sum in DLL", "Remove Duplicates from Sorted DLL",
+      ]},
+      { name: 'Hard Problems of LL', problems: [
+        "Reverse LL in Groups of Size K", "Rotate a LinkedList", "Flattening of LinkedList",
+        "Clone LL with Random and Next Pointer",
+      ]},
     ]
   },
   {
-    step: 'Step 8', name: 'Bit Manipulation',
-    topics: ['Bit Tricks — AND, OR, XOR, Shift', 'Problems — Single Number, Power of 2']
-  },
-  {
-    step: 'Step 9', name: 'Stack & Queue',
-    topics: [
-      'Stack — Basics, Monotonic Stack, Next Greater Element',
-      'Queue — Basics, Circular Queue, LRU Cache',
-      'Hard — Largest Rectangle in Histogram, Trapping Rain Water',
+    step: 'Step 7', name: 'Recursion [PatternWise]',
+    sections: [
+      { name: 'Get a Strong Hold', problems: [
+        "Recursive Implementation of atoi()", "Pow(x, n)", "Count Good Numbers",
+        "Sort a Stack using Recursion", "Reverse a Stack using Recursion",
+      ]},
+      { name: 'Subsequences Pattern', problems: [
+        "Generate Binary Strings Without Consecutive 1s", "Generate Parentheses", "Power Set",
+        "Learn All Patterns of Subsequences (Theory)", "Count All Subsequences with Sum K",
+        "Check if Subsequence with Sum K Exists", "Combination Sum", "Combination Sum II",
+        "Subsets I", "Subsets II", "Combination Sum III", "Letter Combinations of a Phone Number",
+      ]},
+      { name: 'Trying out all Combos / Hard', problems: [
+        "Palindrome Partitioning", "Word Search", "N-Queen", "Rat in a Maze",
+        "Word Break", "M-Coloring Problem", "Sudoku Solver", "Expression Add Operators",
+      ]},
     ]
   },
   {
-    step: 'Step 10', name: 'Sliding Window & Two Pointers',
-    topics: [
-      'Two Pointers — Pair Sum, Container With Most Water',
-      'Sliding Window — Maximum Subarray of Size K, Fruit in Baskets',
-      'Hard — Minimum Window Substring, Longest Substring Without Repeat',
+    step: 'Step 8', name: 'Bit Manipulation [Concepts & Problems]',
+    sections: [
+      { name: 'Learn Bit Manipulation', problems: [
+        "Introduction to Bits and Tricks", "Check if i-th Bit is Set", "Check if Number is Odd",
+        "Check if Number is Power of 2", "Count the Number of Set Bits", "Set/Unset the Rightmost Unset Bit",
+        "Swap Two Numbers", "Divide Two Numbers Without Multiply/Divide",
+      ]},
+      { name: 'Interview Problems', problems: [
+        "Minimum Bit Flips to Convert Number", "Single Number I", "Power Set (Bit Manipulation)",
+        "XOR of Numbers in a Given Range", "Single Number III",
+      ]},
+      { name: 'Advanced Maths', problems: [
+        "Print Prime Factors of a Number", "All Divisors of a Number", "Count Primes in Range L to R",
+        "Prime Factorisation of a Number", "Power Function — Pow(x, n)",
+      ]},
     ]
   },
   {
-    step: 'Step 11', name: 'Heaps',
-    topics: ['Min/Max Heap Operations', 'Medium/Hard — K-th Largest, Merge K Sorted Lists']
-  },
-  {
-    step: 'Step 12', name: 'Greedy Algorithms',
-    topics: ['Medium — Activity Selection, Jump Game', 'Hard — Job Scheduling, Minimum Platforms']
-  },
-  {
-    step: 'Step 13', name: 'Binary Trees',
-    topics: [
-      'BT Traversals — Inorder, Preorder, Postorder, Level Order',
-      'BT Medium — Height, Diameter, Max Path Sum',
-      'BT Hard — Serialize/Deserialize, LCA, Vertical Order',
+    step: 'Step 9', name: 'Stack and Queues [Learning, Pre-In-Post-fix, Monotonic Stack, Implementation]',
+    sections: [
+      { name: 'Learning', problems: [
+        "Implement Stack using Arrays", "Implement Queue using Arrays", "Implement Stack using Queue",
+        "Implement Queue using Stack", "Implement Stack using LinkedList", "Implement Queue using LinkedList",
+        "Balanced Parentheses", "Implement Min Stack",
+      ]},
+      { name: 'Prefix, Infix, Postfix Conversion', problems: [
+        "Infix to Postfix Conversion", "Prefix to Infix Conversion", "Prefix to Postfix Conversion",
+        "Postfix to Prefix Conversion", "Postfix to Infix Conversion", "Infix to Prefix Conversion",
+      ]},
+      { name: 'Monotonic Stack / Queue Problems', problems: [
+        "Next Greater Element", "Next Greater Element II", "Next Smaller Element",
+        "Number of Greater Elements to the Right", "Trapping Rainwater", "Sum of Subarray Minimums",
+        "Asteroid Collision", "Sum of Subarray Ranges", "Remove K Digits",
+        "Largest Rectangle in a Histogram", "Maximal Rectangles",
+      ]},
+      { name: 'Implementation Problems', problems: [
+        "Sliding Window Maximum", "Stock Span Problem", "Celebrity Problem",
+        "LRU Cache", "LFU Cache",
+      ]},
     ]
   },
   {
-    step: 'Step 14', name: 'Binary Search Trees',
-    topics: ['BST Operations — Insert, Delete, Search', 'BST Problems — Kth Smallest, Validate BST']
-  },
-  {
-    step: 'Step 15', name: 'Graphs',
-    topics: [
-      'Graph BFS and DFS',
-      'Topological Sort — Kahn\'s Algorithm and DFS',
-      'Shortest Path — Dijkstra and Bellman-Ford',
-      'MST — Prim\'s and Kruskal\'s Algorithm',
-      'Strongly Connected Components — Kosaraju',
+    step: 'Step 10', name: 'Sliding Window & Two Pointer Combined Problems',
+    sections: [
+      { name: 'Medium Problems', problems: [
+        "Longest Substring Without Repeating Characters", "Max Consecutive Ones III", "Fruit Into Baskets",
+        "Longest Repeating Character Replacement", "Binary Subarrays With Sum", "Count Number of Nice Subarrays",
+        "Number of Substrings Containing All Three Characters", "Maximum Points from Cards",
+      ]},
+      { name: 'Hard Problems', problems: [
+        "Longest Substring with At Most K Distinct Characters", "Subarrays with K Different Integers",
+        "Minimum Window Substring", "Minimum Window Subsequence",
+      ]},
     ]
   },
   {
-    step: 'Step 16', name: 'Dynamic Programming',
-    topics: [
-      '1D DP — Fibonacci, Climbing Stairs, House Robber',
-      '2D DP — Grid Paths, Unique Paths, Minimum Path Sum',
-      'DP on Subsequences — LCS, LIS, Subset Sum',
-      'DP on Strings — Edit Distance, Regex Matching',
-      'DP on Trees — Tree DP',
-      'Partition DP — Palindrome Partitioning, Burst Balloons',
+    step: 'Step 11', name: 'Heaps [Learning, Medium, Hard Problems]',
+    sections: [
+      { name: 'Learning', problems: [
+        "Heaps (Theory)", "Implement Min Heap", "Check if Array Represents Min Heap",
+        "Convert Min Heap to Max Heap",
+      ]},
+      { name: 'Medium Problems', problems: [
+        "Kth Largest Element in an Array", "Kth Smallest Element in an Array", "Sort K-Sorted Array",
+        "Merge K Sorted Lists", "Replace Elements by Their Rank", "Task Scheduler", "Hand of Straights",
+      ]},
+      { name: 'Hard Problems', problems: [
+        "Design Twitter", "Minimum Cost to Connect Sticks", "Kth Largest Element in a Stream",
+        "Maximum Sum Combination", "Find Median from Data Stream", "Top K Frequent Elements",
+      ]},
+    ]
+  },
+  {
+    step: 'Step 12', name: 'Greedy Algorithms [Easy, Medium/Hard]',
+    sections: [
+      { name: 'Easy Problems', problems: [
+        "Assign Cookies", "Fractional Knapsack", "Lemonade Change", "Valid Parenthesis Checker",
+      ]},
+      { name: 'Medium / Hard Problems', problems: [
+        "N Meetings in One Room", "Jump Game I", "Jump Game II", "Minimum Platforms for Railway",
+        "Job Sequencing Problem", "Candy", "Shortest Job First (SJF)",
+        "LRU Page Replacement Algorithm", "Insert Interval", "Merge Intervals", "Non-overlapping Intervals",
+      ]},
+    ]
+  },
+  {
+    step: 'Step 13', name: 'Binary Trees [Traversals, Medium and Hard Problems]',
+    sections: [
+      { name: 'Traversals', problems: [
+        "Introduction to Trees", "Binary Tree Representation", "Pre/Post/Inorder in One Traversal",
+        "Preorder Traversal", "Inorder Traversal", "Postorder Traversal", "Level Order Traversal",
+        "Iterative Preorder Traversal", "Iterative Inorder Traversal", "Postorder Traversal using 2 Stacks",
+        "Postorder Traversal using 1 Stack", "All Three Traversals in One Pass",
+      ]},
+      { name: 'Medium Problems', problems: [
+        "Maximum Depth of Binary Tree", "Check for Balanced Binary Tree", "Diameter of Binary Tree",
+        "Maximum Path Sum", "Check if Two Trees are Identical", "Zig-Zag / Spiral Traversal",
+        "Boundary Traversal", "Vertical Order Traversal", "Top View of Binary Tree",
+        "Bottom View of Binary Tree", "Right / Left View of Binary Tree", "Symmetric Binary Tree",
+      ]},
+      { name: 'Hard Problems', problems: [
+        "Print Root to Leaf Path", "LCA in Binary Tree", "Maximum Width of Binary Tree",
+        "Children Sum Property", "Print All Nodes at Distance K", "Minimum Time to Burn Tree",
+        "Count Total Nodes in Complete BT", "Requirements to Construct Unique BT",
+        "Construct BT from Preorder and Inorder", "Construct BT from Postorder and Inorder",
+        "Serialize and Deserialize BT", "Morris Preorder Traversal", "Morris Inorder Traversal",
+        "Flatten Binary Tree to LinkedList",
+      ]},
+    ]
+  },
+  {
+    step: 'Step 14', name: 'Binary Search Trees [Concept and Problems]',
+    sections: [
+      { name: 'Concepts', problems: [
+        "Introduction to BST", "Search in a BST", "Find Min/Max in BST",
+      ]},
+      { name: 'Practice Problems', problems: [
+        "Floor and Ceil in a BST", "Floor in a Binary Search Tree", "Insert a Given Node in BST",
+        "Delete a Node in BST", "Kth Smallest and Largest Element in BST", "Check if a Tree is a BST",
+        "LCA in BST", "Construct a BST from Preorder Traversal", "Inorder Successor/Predecessor in BST",
+        "Merge Two BSTs", "Two Sum in BST", "Correct BST with Two Nodes Swapped", "Largest BST in Binary Tree",
+      ]},
+    ]
+  },
+  {
+    step: 'Step 15', name: 'Graphs [Concepts & Problems]',
+    sections: [
+      { name: 'Learning', problems: [
+        "Introduction to Graph", "Graph Representation (C++)", "Graph Representation (Java)",
+        "Connected Components", "Traversal Techniques (BFS)", "DFS Traversal",
+      ]},
+      { name: 'Problems on BFS / DFS', problems: [
+        "Number of Provinces", "Connected Components in Matrix", "Rotten Oranges", "Flood Fill Algorithm",
+        "Cycle Detection in Undirected Graph (BFS)", "Cycle Detection in Undirected Graph (DFS)",
+        "Distance of Nearest Cell Having 1", "Surrounded Regions", "Number of Enclaves",
+        "Word Ladder I", "Word Ladder II", "Number of Islands", "Bipartite Graph (DFS)",
+        "Cycle Detection in Directed Graph (DFS)",
+      ]},
+      { name: 'Topo Sort and Problems', problems: [
+        "Topological Sort (DFS)", "Kahn's Algorithm (BFS Topo Sort)", "Detect Cycle in Directed Graph (Topo)",
+        "Course Schedule I", "Course Schedule II", "Find Eventual Safe States", "Alien Dictionary",
+      ]},
+      { name: 'Shortest Path Algorithms', problems: [
+        "Shortest Path in Undirected Graph (Unit Weights)", "Shortest Path in DAG", "Dijkstra's Algorithm",
+        "Why Priority Queue in Dijkstra's", "Shortest Distance in a Binary Maze", "Path with Minimum Effort",
+        "Cheapest Flights Within K Stops", "Network Delay Time", "Number of Ways to Arrive at Destination",
+        "Minimum Multiplications to Reach End", "Bellman-Ford Algorithm", "Floyd-Warshall Algorithm",
+        "City with Smallest Number of Neighbours",
+      ]},
+      { name: 'MST / Disjoint Set and Problems', problems: [
+        "MST Theory", "Prim's Algorithm", "Disjoint Set (Union by Rank & Path Compression)",
+        "Find the MST Weight (Kruskal's)", "Number of Operations to Make Network Connected",
+        "Most Stones Removed with Same Row or Column", "Accounts Merge", "Number of Islands II",
+        "Making a Large Island", "Swim in Rising Water",
+      ]},
+      { name: 'Other Algorithms', problems: [
+        "Bridges in Graph", "Articulation Point in Graph", "Kosaraju's Algorithm",
+      ]},
+    ]
+  },
+  {
+    step: 'Step 16', name: 'Dynamic Programming [Patterns and Problems]',
+    sections: [
+      { name: 'Introduction to DP', problems: [
+        "Introduction to DP (Memoization vs Tabulation)",
+      ]},
+      { name: '1D DP', problems: [
+        "Climbing Stairs", "Frog Jump", "Frog Jump with K Distances",
+        "Maximum Sum of Non-Adjacent Elements", "House Robber",
+      ]},
+      { name: '2D / 3D DP and DP on Grids', problems: [
+        "Ninja's Training", "Grid Unique Paths", "Unique Paths II",
+        "Minimum Falling Path Sum", "Triangle", "Ninja and His Friends",
+      ]},
+      { name: 'DP on Subsequences', problems: [
+        "Subset Sum Equal to Target", "Partition Equal Subset Sum", "Partition Set into Two Subsets (Min Diff)",
+        "Count Subsets with Sum K", "Count Partitions with Given Difference", "0/1 Knapsack",
+        "Minimum Coins", "Target Sum", "Coin Change II", "Unbounded Knapsack", "Rod Cutting Problem",
+      ]},
+      { name: 'DP on Strings', problems: [
+        "Longest Common Subsequence", "Print Longest Common Subsequence", "Longest Common Substring",
+        "Longest Palindromic Subsequence", "Minimum Insertions to Make String Palindrome",
+        "Minimum Insertions/Deletions to Convert String A to B", "Shortest Common Supersequence",
+        "Distinct Subsequences", "Edit Distance", "Wildcard Matching",
+      ]},
+      { name: 'DP on Stocks', problems: [
+        "Best Time to Buy and Sell Stock", "Buy and Sell Stock II", "Buy and Sell Stock III",
+        "Buy and Sell Stock IV", "Buy and Sell Stock with Cooldown", "Buy and Sell Stock with Transaction Fee",
+      ]},
+      { name: 'DP on LIS', problems: [
+        "Longest Increasing Subsequence", "Print Longest Increasing Subsequence", "LIS using Binary Search",
+        "Largest Divisible Subset", "Longest String Chain", "Longest Bitonic Subsequence",
+        "Number of Longest Increasing Subsequences",
+      ]},
+      { name: 'MCM DP / Partition DP', problems: [
+        "Matrix Chain Multiplication", "MCM Bottom-Up", "Minimum Cost to Cut the Stick",
+        "Burst Balloons", "Evaluate Boolean Expression to True", "Palindrome Partitioning II",
+        "Partition Array for Maximum Sum",
+      ]},
+      { name: 'DP on Squares', problems: [
+        "Maximum Rectangle Area with All 1s", "Count Square Submatrices with All 1s",
+      ]},
     ]
   },
   {
     step: 'Step 17', name: 'Tries',
-    topics: ['Trie Insert, Search, StartsWith', 'Problems — Word Dictionary, Replace Words']
+    sections: [
+      { name: 'Theory', problems: [
+        "Trie Implementation and Operations",
+      ]},
+      { name: 'Problems', problems: [
+        "Trie II — Advanced Operations (count prefix)", "Longest Word with All Prefixes",
+        "Number of Distinct Substrings in a String", "Bit Prerequisites for Trie Problems",
+        "Maximum XOR of Two Numbers in an Array", "Maximum XOR With an Element From Array",
+      ]},
+    ]
   },
   {
-    step: 'Step 18', name: 'Strings Advanced',
-    topics: ['KMP Algorithm', 'Z-Algorithm and Rabin-Karp']
+    step: 'Step 18', name: 'Strings',
+    sections: [
+      { name: 'Hard Problems', problems: [
+        "Minimum Bracket Reversals to Balance Expression", "Count and Say", "Hashing in Strings (Theory)",
+        "Rabin-Karp Algorithm", "Z-Function", "KMP Algorithm / LPS Array",
+        "Shortest Palindrome", "Longest Happy Prefix", "Count Palindromic Subsequences",
+      ]},
+    ]
   },
 ];
+
+// Flatten every problem into one ordered list (index 0 .. N-1) with its step/section context
+export const DSA_FLAT = (() => {
+  const flat = [];
+  for (const step of DSA_STEPS) {
+    for (const section of step.sections) {
+      for (const problem of section.problems) {
+        flat.push({ step: step.step, stepName: step.name, section: section.name, problem });
+      }
+    }
+  }
+  return flat;
+})();
+
+// 474 problems total · 2 problems / study day → 237 study days (auto-computed)
+export const TOTAL_DSA_PROBLEMS = DSA_FLAT.length;
+export const TOTAL_DSA_DAYS_COMPUTED = Math.ceil(TOTAL_DSA_PROBLEMS / 2);
 
 // ─────────────────────────────────────────
 // UTILITY: Flatten all S1/S2/S3 into a single lecture array
@@ -1094,35 +1369,30 @@ export function getScheduleForDay(dayNum) {
 }
 
 function getDsaForDay(dayNum) {
-  // 2 problems per day. Map day to Striver A2Z step/topic
+  // 2 problems per day. Each study day maps to 2 consecutive problems in DSA_FLAT.
   const problemsPerDay = 2;
-  const startProblem = (dayNum - 1) * problemsPerDay; // 0-indexed start
+  const total = DSA_FLAT.length;
+  const gi = (dayNum - 1) * problemsPerDay; // 0-indexed start in the flat list
 
-  // Flatten all DSA step topics (each topic represents ~4-6 problems on average)
-  const allTopics = [];
-  let problemCount = 0;
-  for (const step of DSA_STEPS) {
-    for (const topic of step.topics) {
-      // Each topic has roughly 2-6 problems; approximate as 4 avg
-      const topicProblems = 4;
-      allTopics.push({ step: step.step, stepName: step.name, topic, startProblem: problemCount, endProblem: problemCount + topicProblems - 1 });
-      problemCount += topicProblems;
-    }
-  }
+  const p1 = DSA_FLAT[Math.min(gi, total - 1)];
+  const p2 = DSA_FLAT[gi + 1]; // may be undefined on the final odd day
 
-  // Find which topic today's problems fall in
-  const relevantTopic = allTopics.find(t => startProblem >= t.startProblem && startProblem <= t.endProblem)
-    || allTopics[allTopics.length - 1];
+  const problemNumber = Math.min(gi + 1, total);
+  const problemNumberEnd = Math.min(gi + problemsPerDay, total);
 
-  const problemNumber = Math.min(startProblem + 1, 474);
-  const problemNumberEnd = Math.min(startProblem + problemsPerDay, 474);
+  // Title: today's 1–2 problem names
+  const title = p2 && p2.section === p1.section
+    ? `${p1.problem} + ${p2.problem}`
+    : p2
+      ? `${p1.problem} + ${p2.problem}`
+      : p1.problem;
 
   return {
-    module: `${relevantTopic.step} — ${relevantTopic.stepName}`,
+    module: `${p1.step} — ${p1.stepName} · ${p1.section}`,
     source: 'Striver A2Z',
-    title: relevantTopic.topic,
+    title,
     color: '#B45309',
-    problemRange: `Problems #${problemNumber}–${problemNumberEnd} of 474`,
+    problemRange: `Problems #${problemNumber}–${problemNumberEnd} of ${total}`,
     totalSolvedTarget: problemNumberEnd,
   };
 }
@@ -1131,7 +1401,7 @@ function getDsaForDay(dayNum) {
 export const TOTAL_S1_DAYS = S1_LECTURES.length;  // ~186
 export const TOTAL_S2_DAYS = S2_LECTURES.length;  // ~152
 export const TOTAL_S3_DAYS = S3_LECTURES.length;  // 65 (8 modules from CampusX DSMP)
-export const TOTAL_DSA_DAYS = 237;                 // 474 problems / 2/day
+export const TOTAL_DSA_DAYS = TOTAL_DSA_DAYS_COMPUTED; // auto-computed from DSA_STEPS
 // S5 runs Days 61–200 (140 lectures), effectively ending at day 200
 export const TOTAL_S5_CALENDAR_DAYS = S5_START_DAY - 1 + TOTAL_S5_DAYS; // 60 + 140 = 200
 export const TOTAL_BATCH_DAYS = Math.max(TOTAL_S1_DAYS, TOTAL_S2_DAYS, TOTAL_DSA_DAYS, TOTAL_S5_CALENDAR_DAYS);
@@ -1149,7 +1419,7 @@ export function getLectureIndex(subject, dayNum) {
     return { index: s5Idx, total: S5_LECTURES.length, locked: dayNum < S5_START_DAY };
   }
   const start = idx * 2 + 1;
-  return { index: idx, total: 237, problemStart: start, problemEnd: start + 1 };
+  return { index: idx, total: TOTAL_DSA_DAYS_COMPUTED, problemStart: start, problemEnd: start + 1 };
 }
 
 // ─────────────────────────────────────────
@@ -1224,7 +1494,7 @@ export function getWeekMilestone(subject, weekNumber) {
   const lectureTarget = weekNumber * 6; // 6 study days/week
 
   if (subject === 'S4') {
-    return { subject, weekNumber, targetProblem: Math.min(lectureTarget * 2, 474) };
+    return { subject, weekNumber, targetProblem: Math.min(lectureTarget * 2, TOTAL_DSA_PROBLEMS) };
   }
 
   if (subject === 'S5') {
@@ -1271,7 +1541,7 @@ export function getMonthMilestone(subject, monthNumber) {
   const lectureTarget = monthNumber * 26;
 
   if (subject === 'S4') {
-    return { subject, monthNumber, targetProblem: Math.min(lectureTarget * 2, 474) };
+    return { subject, monthNumber, targetProblem: Math.min(lectureTarget * 2, TOTAL_DSA_PROBLEMS) };
   }
 
   if (subject === 'S5') {
