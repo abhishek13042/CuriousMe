@@ -1009,31 +1009,17 @@ const AIBatch = () => {
                 />
               </div>
 
-              {/* Subject cards — only show pending (undone + unlocked) subjects */}
-              {schedule && (() => {
-                const pending = SUBJECT_KEYS.filter(k => !dayCompletions[k] && !schedule[k]?.locked);
-                if (pending.length === 0) {
-                  return (
-                    <div className="flex flex-col items-center justify-center py-10 gap-3">
-                      <span className="text-4xl">🎉</span>
-                      <p className="text-base font-bold text-[#1A1A2E] font-['Inter']">All done for today!</p>
-                      <p className="text-xs text-[#9A9590] font-['Inter'] text-center">
-                        Every subject checked off. Rest well — see you tomorrow.
-                      </p>
-                    </div>
-                  );
-                }
-                return pending.map(k => (
-                  <SubjectCard
-                    key={k}
-                    subjectKey={k}
-                    lecture={schedule[k]}
-                    done={dayCompletions[k]}
-                    onToggle={() => toggleCompletion(selectedDateStr, k, dayNum, schedule)}
-                    dayNum={dayNum}
-                  />
-                ));
-              })()}
+              {/* Subject cards — show all subjects, completed ones appear ticked */}
+              {schedule && SUBJECT_KEYS.map(k => (
+                <SubjectCard
+                  key={k}
+                  subjectKey={k}
+                  lecture={schedule[k]}
+                  done={dayCompletions[k]}
+                  onToggle={() => !schedule[k]?.locked && toggleCompletion(selectedDateStr, k, dayNum, schedule)}
+                  dayNum={dayNum}
+                />
+              ))}
 
               {/* Generate DPP button */}
               {anyDone && (
