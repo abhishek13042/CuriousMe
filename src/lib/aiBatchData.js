@@ -1438,6 +1438,69 @@ export function getLectureIndex(subject, dayNum) {
 }
 
 // ─────────────────────────────────────────
+// UTILITY: Build { S1..S5: Set<studyDayNum> } from the completions map.
+// A completion date maps to a study day; a lecture's identity == its study day.
+// ─────────────────────────────────────────
+const ALL_SUBJECT_KEYS = ['S1', 'S2', 'S3', 'S4', 'S5'];
+
+export function buildCompletedBySubject(completions) {
+  const result = { S1: new Set(), S2: new Set(), S3: new Set(), S4: new Set(), S5: new Set() };
+  for (const [dateStr, subjects] of Object.entries(completions || {})) {
+    const dayNum = getStudyDayNumber(new Date(dateStr + 'T12:00:00'));
+    if (!dayNum) continue;
+    for (const sk of ALL_SUBJECT_KEYS) {
+      if (subjects[sk]) result[sk].add(dayNum);
+    }
+  }
+  return result;
+}
+
+// Highest study day that has a real lecture/quota for a subject.
+function subjectMaxDay(subject) {
+  if (subject === 'S1') return S1_LECTURES.length;
+  if (subject === 'S2') return S2_LECTURES.length;
+  if (subject === 'S3') return S3_LECTURES.length;
+  if (subject === 'S4') return TOTAL_DSA_DAYS_COMPUTED;
+  if (subject === 'S5') return S5_START_DAY - 1 + S5_LECTURES.length;
+  return 0;
+}
+
+// ─────────────────────────────────────────
+// UTILITY: The lecture the Today tab should surface for a subject.
+// Schedule is unchanged: we show the lecture scheduled for `dayNum`, BUT if that
+// scheduled lecture is already marked done, we scan forward to the next UNMARKED
+// lecture (>= scheduled day) and surface that instead. Ticking it advances naturally.
+//   completedDaySet = Set<studyDayNum> of completed days for this subject.
+//   returns { lecture, dayIdentity, done, isAhead, locked }
+// ─────────────────────────────────────────
+export function getNextActionableLecture(subject, dayNum, completedDaySet) {
+  const set = completedDaySet || new Set();
+
+  // S5 stays locked before its start day
+  if (subject === 'S5' && dayNum < S5_START_DAY) {
+    return { lecture: getScheduleForDay(dayNum).S5, dayIdentity: dayNum, done: false, isAhead: false, locked: true };
+  }
+
+  const maxDay = subjectMaxDay(subject);
+  const startDay = subject === 'S5' ? Math.max(dayNum, S5_START_DAY) : dayNum;
+
+  for (let j = startDay; j <= maxDay; j++) {
+    if (!set.has(j)) {
+      return {
+        lecture: getScheduleForDay(j)[subject],
+        dayIdentity: j,
+        done: false,
+        isAhead: j > dayNum,
+        locked: false,
+      };
+    }
+  }
+
+  // Everything from the scheduled day to the end is already done → caught up.
+  return { lecture: getScheduleForDay(dayNum)[subject], dayIdentity: dayNum, done: true, isAhead: false, locked: false };
+}
+
+// ─────────────────────────────────────────
 // UTILITY: Module-level progress for a subject
 // completedDayNums = array of day_num values where that subject was marked done
 // Returns null for S4 (DSA uses steps, not modules in the same way)

@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronDown, ChevronUp, Trophy, Lock } from 'lucide-react';
 import { useAiBatchStore } from '../store/aiBatchStore';
 import {
-  SUBJECTS, getStudyDayNumber, studyDayToDate, getScheduleForDay,
+  SUBJECTS, studyDayToDate, getScheduleForDay,
   S1_SEQUENCE, S2_SEQUENCE, S3_SEQUENCE, S5_SEQUENCE,
   S1_LECTURES, S2_LECTURES, S3_LECTURES, S5_LECTURES,
-  DSA_STEPS, S5_START_DAY, TOTAL_DSA_PROBLEMS,
+  DSA_STEPS, S5_START_DAY, TOTAL_DSA_PROBLEMS, buildCompletedBySubject,
 } from '../lib/aiBatchData';
 
 const SUBJECT_KEYS = ['S1', 'S2', 'S3', 'S4', 'S5'];
@@ -55,19 +55,8 @@ export default function MyBatch() {
     }
   };
 
-  // completions = { 'YYYY-MM-DD': { S1: bool, ... } }
-  // Map each date → study day number, collect which dayNums are done per subject
-  const completedBySubject = useMemo(() => {
-    const result = { S1: new Set(), S2: new Set(), S3: new Set(), S4: new Set(), S5: new Set() };
-    for (const [dateStr, subjects] of Object.entries(completions)) {
-      const dayNum = getStudyDayNumber(new Date(dateStr + 'T12:00:00'));
-      if (!dayNum) continue;
-      for (const sk of SUBJECT_KEYS) {
-        if (subjects[sk]) result[sk].add(dayNum);
-      }
-    }
-    return result;
-  }, [completions]);
+  // completions = { 'YYYY-MM-DD': { S1: bool, ... } } → { S1..S5: Set<studyDayNum> }
+  const completedBySubject = useMemo(() => buildCompletedBySubject(completions), [completions]);
 
   const toggleMod = (key) =>
     setExpandedModules(prev => ({ ...prev, [key]: !prev[key] }));

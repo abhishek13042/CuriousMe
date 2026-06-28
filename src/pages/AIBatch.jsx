@@ -11,10 +11,11 @@ import {
 } from 'lucide-react';
 import { useAiBatchStore } from '../store/aiBatchStore';
 import {
-  SUBJECTS, getStudyDayNumber, getScheduleForDay, isSunday,
+  SUBJECTS, getStudyDayNumber, getScheduleForDay, isSunday, studyDayToDate,
   TOTAL_S1_DAYS, TOTAL_S2_DAYS, TOTAL_S3_DAYS, TOTAL_DSA_DAYS, TOTAL_S5_DAYS, S5_START_DAY,
   BATCH_START_DATE, DAILY_BLOCKS,
-  getDailyVideoCount, getWeekMilestone, getMonthMilestone,
+  getWeekMilestone, getMonthMilestone,
+  buildCompletedBySubject, getNextActionableLecture,
 } from '../lib/aiBatchData';
 
 const SUBJECT_ICONS = { S1: '🤖', S2: '🧠', S3: '⚙️', S4: '🎯', S5: '🏆' };
@@ -30,7 +31,7 @@ function dateToStr(d) {
 }
 
 // ── Subject Card ──────────────────────────────────────
-const SubjectCard = ({ subjectKey, lecture, done, onToggle, dayNum }) => {
+const SubjectCard = ({ subjectKey, lecture, done, onToggle, dayNum, aheadOfSchedule }) => {
   const [expanded, setExpanded] = useState(false);
   const sub = SUBJECTS[subjectKey];
   const isLocked = lecture?.locked === true;
@@ -109,6 +110,12 @@ const SubjectCard = ({ subjectKey, lecture, done, onToggle, dayNum }) => {
               <span className="text-[10px] text-[#9A9590] font-['Inter']">
                 {sub.name}
               </span>
+              {aheadOfSchedule && (
+                <span className="text-[9px] font-bold font-['Space_Mono'] px-1.5 py-0.5 rounded-full flex items-center gap-1"
+                  style={{ backgroundColor: sub.color + '18', color: sub.color }}>
+                  <Check size={9} strokeWidth={3} /> today done · next up
+                </span>
+              )}
             </div>
 
             {/* Module + lecture position */}
@@ -793,6 +800,16 @@ const AIBatch = () => {
 
   const dayNum = getStudyDayNumber(selectedDate);
   const schedule = useMemo(() => getScheduleForDay(dayNum), [dayNum]);
+
+  // Per-subject "next actionable" lecture: schedule is unchanged, but if the lecture
+  // scheduled for this day is already marked done, surface the next UNMARKED one.
+  const completedBySubject = useMemo(() => buildCompletedBySubject(completions), [completions]);
+  const actionable = useMemo(() => {
+    const out = {};
+    for (const k of SUBJECT_KEYS) out[k] = getNextActionableLecture(k, dayNum, completedBySubject[k]);
+    return out;
+  }, [dayNum, completedBySubject]);
+
   const dayCompletions = getDayCompletions(selectedDateStr);
   const allDone = getAllDoneForDay(selectedDateStr);
   const anyDone = getAnyDoneForDay(selectedDateStr);
@@ -982,21 +999,28 @@ const AIBatch = () => {
                 </div>
               </div>
 
-              {/* Daily video count banner */}
+              {/* Daily video count banner — reflects each subject's next actionable lecture */}
               {schedule && (
                 <div className="bg-white rounded-xl border border-[#E5E0D8] p-3 flex items-center gap-3 flex-wrap">
                   <p className="text-[9px] font-bold text-[#9A9590] font-['Space_Mono'] uppercase tracking-widest shrink-0">
                     Today Watch
                   </p>
-                  {getDailyVideoCount(dayNum)?.map(item => (
-                    <div key={item.subject} className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white font-['Space_Mono']"
-                        style={{ backgroundColor: SUBJECTS[item.subject]?.color }}>
-                        {item.count} {item.subject === 'S4' ? 'problems' : 'lecture'}
-                      </span>
-                      <span className="text-[9px] text-[#9A9590] font-['Inter']">{item.detail}</span>
-                    </div>
-                  ))}
+                  {['S1', 'S2', 'S3', 'S4'].map(k => {
+                    const a = actionable[k];
+                    const isS4 = k === 'S4';
+                    const detail = isS4
+                      ? a.lecture?.problemRange
+                      : `Lec ${a.dayIdentity} of ${SUBJECT_TOTALS[k]}`;
+                    return (
+                      <div key={k} className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white font-['Space_Mono']"
+                          style={{ backgroundColor: SUBJECTS[k]?.color }}>
+                          {isS4 ? '2 problems' : '1 lecture'}
+                        </span>
+                        <span className="text-[9px] text-[#9A9590] font-['Inter']">{detail}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -1009,17 +1033,26 @@ const AIBatch = () => {
                 />
               </div>
 
-              {/* Subject cards — show all subjects, completed ones appear ticked */}
-              {schedule && SUBJECT_KEYS.map(k => (
-                <SubjectCard
-                  key={k}
-                  subjectKey={k}
-                  lecture={schedule[k]}
-                  done={dayCompletions[k]}
-                  onToggle={() => !schedule[k]?.locked && toggleCompletion(selectedDateStr, k, dayNum, schedule)}
-                  dayNum={dayNum}
-                />
-              ))}
+              {/* Subject cards — each surfaces its next UNMARKED lecture (schedule unchanged) */}
+              {schedule && SUBJECT_KEYS.map(k => {
+                const a = actionable[k];
+                return (
+                  <SubjectCard
+                    key={k}
+                    subjectKey={k}
+                    lecture={a.lecture}
+                    done={a.done}
+                    aheadOfSchedule={a.isAhead}
+                    onToggle={() => {
+                      if (a.locked) return;
+                      const j = a.dayIdentity;
+                      const ds = studyDayToDate(j).toISOString().split('T')[0];
+                      toggleCompletion(ds, k, j, getScheduleForDay(j));
+                    }}
+                    dayNum={a.dayIdentity}
+                  />
+                );
+              })}
 
               {/* Generate DPP button */}
               {anyDone && (
